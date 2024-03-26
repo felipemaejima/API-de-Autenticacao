@@ -41,14 +41,14 @@ function verifySessionValidity(SessionTime) {
 	const currentDate = new Date();
 	const timeSession = currentDate.getTime() - SessionTime.getTime();
 	const validity = Math.floor(timeSession / 1000 / 60);
-	return validity < 1 ? true : false;
+	return validity < 30 ? true : false;
 }
 
 const security = {
 	createPasswordHash,
 	comparePasswordHash,
 	createSessionHash,
-  verifySessionValidity,
+ 	verifySessionValidity,
 };
 
 export default security;

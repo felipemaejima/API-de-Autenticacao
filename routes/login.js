@@ -1,25 +1,17 @@
 import express from "express";
-import sequelize from "../db.js";
+import db from "../db.js";
 import { Op } from "sequelize";
 import User from "../models/user.model.js";
 import security from "../security.js";
 
 const router = express.Router();
 
-(async () => {
-	try {
-		await sequelize.authenticate();
-		console.log("Conexão estabelecida com sucesso.");
-
-		await sequelize.sync();
-		console.log("Modelos sincronizados.");
-	} catch (err) {
-		console.error("Erro ao conectar ou sincronizar modelos:", err);
-	}
-})();
+db.connect();
 
 router.get("/", async (req, res) => {
+
     if(!req.headers.session) return res.json({ message: "Envie as credenciais para realizar o login" });
+
     await User.findOne({
 		where: {
             sess_hash: req.headers.session,
@@ -27,15 +19,21 @@ router.get("/", async (req, res) => {
 		attributes: ["sess_time"],
 	})
         .then((user) => {
+			if (!user) return res.json({ message: "Envie as credenciais para realizar o login" });
+			
             return security.verifySessionValidity(user.sess_time) 
-            ? res.json({ message: "As credenciais já  foram autenticadas", redirect: '/' })
+            ? res.json({ message: "As credenciais já foram autenticadas", redirect: '/' })
             : res.json({ message: "Envie as credenciais para realizar o login" });
         })
 	
 });
 
+
 router.post("/", async (req, res) => {
+
 	const userData = req.body;
+
+	// Verifica se a sessão ainda está ativa
     if(req.headers.session) {
         const userSession = await User.findOne({
             where: {
@@ -50,6 +48,7 @@ router.post("/", async (req, res) => {
             return res.json({ message: "As credenciais já foram autenticadas", redirect: '/' });
     }
 
+	// Case sessão não esteja ativa, verifica credenciais
 	if (!userData.user)
 		return res.status(400).json({ error: "Usuário não informado" });
 	if (!userData.password)
@@ -58,27 +57,20 @@ router.post("/", async (req, res) => {
 	await User.findOne({
 		where: {
 			[Op.or]: [
-				{ username: userData.user ? userData.user : null },
-				{ email: userData.user ? userData.user : null },
+				{ username: userData.user  },
+				{ email: userData.user },
 			],
 		},
 		attributes: ["id", "username", "password"],
 	}).then(async (user) => {
-		if (!user) {
-			return res.status(400).json({ error: "Usuário não encontrado" });
-		}
-		await security
-			.comparePasswordHash(userData.password, user.password)
+
+		if (!user) return res.status(400).json({ error: "Usuário não encontrado" });
+
+		await security.comparePasswordHash(userData.password, user.password)
 			.then(async (result) => {
-				if (!result) {
-					return res
-						.status(400)
-						.json({ error: "Credenciais inválidas" });
-				}
-				const validationToken = await security.createSessionHash(
-					user.id,
-					user.username
-				);
+				if (!result) return res.status(400).json({ error: "Credenciais inválidas" });
+					
+				const validationToken = await security.createSessionHash(user.id, user.username);
 				await User.update(
 					{ sess_hash: validationToken, sess_time: new Date() },
 					{ where: { id: user.id } }
@@ -87,18 +79,18 @@ router.post("/", async (req, res) => {
 						return res.status(200).json({ token: validationToken });
 					})
 					.catch((err) => {
-						return res
-							.status(400)
-							.json({
-								error: "Erro ao atualizar sessão.",
-								data: err,
-							});
+						return res.status(400).json({error: "Erro ao iniciar sessão.", data: err});
 					});
 			});
-	});
+	})
+	.catch((err) => {
+		return res.status(400).json({ error: "Erro ao fazer o login.", data: err });
+	})
 });
+
+
 router.post("/logout", async (req, res) => {
-    if(!req.headers.session) return res.json({ message: "Já está deslogado", redirect: '/login' });
+    if(!req.headers.session) return res.json({ message: "A sessão já está encerrada", redirect: '/login' });
     await User.findOne({
         where: {
             sess_hash: req.headers.session,
@@ -106,13 +98,9 @@ router.post("/logout", async (req, res) => {
         attributes: ["id", "username"],
     })
         .then( async (user) => {
-            if (!user) {
-                return res.status(400).json({ error: "Usuário não encontrado" , redirect: '/' });
-            }
-            const validationToken = await security.createSessionHash(
-                user.id,
-                user.username
-            );
+            if (!user) return res.status(400).json({ error: "A sessão já está encerrada" , redirect: '/login' });
+			
+            const validationToken = await security.createSessionHash(user.id, user.username);
             await User.update(
                 { sess_hash: validationToken, sess_time: new Date() },
                 { where: { id: user.id } }
@@ -121,14 +109,12 @@ router.post("/logout", async (req, res) => {
                     return res.status(200).json({ message: "Deslogado com sucesso", redirect: '/' });
                 })
                 .catch((err) => {
-                    return res
-                        .status(400)
-                        .json({
-                            error: "Erro ao atualizar sessão.",
-                            data: err,
-                        });
+                    return res.status(400).json({error: "Erro ao encerrar a sessão.", data: err,});
                 });
         })
+		.catch((err) => {
+			return res.status(400).json({ error: "Erro ao encontrar a sessão do usuário.", data: err });
+		})
 })
 
 export default router;
