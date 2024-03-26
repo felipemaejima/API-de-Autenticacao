@@ -1,31 +1,36 @@
-API RESTful com CRUD e Autenticação de usuários, criada com intuito de estudo.
+# API RESTful com CRUD e Autenticação de Usuários
 
-Principais Tecnologias utilizadas: 
+Uma API RESTful com operações de CRUD (Create, Read, Update, Delete) e autenticação de usuários, criada com o intuito de estudo.
+
+## Principais Tecnologias Utilizadas
 - NodeJS
 - Sequelize
-- MySql
+- MySQL
 - Express
 
-Outras Bibliotecas: 
-- Bcrypt 
-- Dotenv 
+## Outras Bibliotecas
+- Bcrypt
+- Dotenv
 
-Pendencias que serão implementadas: 
-- finalizar criação e configuração das rotas de atualização e deleção de usuários 
-- implementar sistema de permisões de usuário (3 níveis)
-- implementar gerador de senhas (endpoint)
-- implementar JWT
-- criar testes (jest)
+## Pendências a Serem Implementadas
+- Finalizar criação e configuração das rotas de atualização e deleção de usuários
+- Implementar sistema de permissões de usuários (3 níveis)
+- Implementar JWT (JSON Web Tokens)
+- Criar testes (jest)
 
-Endpoints (passíveis de mudança de estrutura):
-    Users : 
-    /
-    (post e get)
+## Endpoints (passíveis de mudança na estrutura)
 
-    Login : 
-    /login 
-    (post e get)
+### 1. /users
+   - `POST` e `GET`
 
-    Logout: 
-    /logout 
-    (post)
+### 2. /login
+   - `POST` e `GET`
+
+### 3. /logout
+   - `POST`
+
+### 4. /generate-password(?...params)
+   - `GET`
+   - Observação: Utilizará os parâmetros padrão caso não sejam informados.
+
+Esta API foi criada como parte de um projeto de estudo e pode sofrer mudanças na estrutura dos endpoints e implementações futuras. 

@@ -22,7 +22,7 @@ router.get("/", async (req, res) => {
 			if (!user) return res.json({ message: "Envie as credenciais para realizar o login" });
 			
             return security.verifySessionValidity(user.sess_time) 
-            ? res.json({ message: "As credenciais já foram autenticadas", redirect: '/' })
+            ? res.json({ message: "Já há uma sessão ativa.", redirect: '/users' })
             : res.json({ message: "Página de login." });
         })
 	
@@ -45,7 +45,7 @@ router.post("/", async (req, res) => {
             return user ? user.sess_time : false;
         })
         if (userSession && security.verifySessionValidity(userSession)) 
-            return res.json({ message: "As credenciais já foram autenticadas", redirect: '/' });
+            return res.json({ message: "Já há uma sessaão ativa.", redirect: '/users' });
     }
 
 	// Case sessão não esteja ativa, verifica credenciais
@@ -76,7 +76,7 @@ router.post("/", async (req, res) => {
 					{ where: { id: user.id } }
 				)
 					.then(() => {
-						return res.status(200).json({ token: validationToken, redirect: '/' });
+						return res.status(200).json({ token: validationToken, redirect: '/users' });
 					})
 					.catch((err) => {
 						return res.status(400).json({error: "Erro ao iniciar sessão.", data: err});
