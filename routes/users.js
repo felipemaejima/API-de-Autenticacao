@@ -8,7 +8,6 @@ const router = express.Router();
 db.connect();
 
 router.get("/", async (req, res) => {
-	// verifica se a sessão está atíva para retornar os usuários
     if(!req.headers.session) return res.json({ message: "Faça o login para acessar as informações" , redirect: '/login' });
 
 	await User.findOne({
@@ -33,10 +32,13 @@ router.get("/", async (req, res) => {
 		});
 });
 
+router.get("/:id", async (req, res) => {
+	
+})
+
 router.post("/", async (req, res) => {
 	const userData = req.body;
 
-	// verifica se a sessão está atíva para inserir o novo usuário
 	if(!req.headers.session) return res.status(403).json({ message: "Faça o login para adicionar usuários." , redirect: '/login'  });
 
 	await User.findOne({

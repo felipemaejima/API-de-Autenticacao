@@ -30,9 +30,9 @@ Uma API RESTful com operações de CRUD (Create, Read, Update, Delete) e autenti
 ### 3. /logout
    - `POST`
 
-### 4. /generate-password(?...params)
+### 4. /generate-password (?...params)
    - `GET`
-   - espera um array de numeros(4) [total de caracteres, quantidade de números , quantidade de símbolos, quantidade de letras maiúsculas], completanto o restante (caso haja) com letras minusculas.
+   - Espera um array de numeros(4) [total de caracteres, quantidade de números , quantidade de símbolos, quantidade de letras maiúsculas], completanto o restante (caso haja) com letras minusculas.
    - Observação: Utilizará os parâmetros padrão no código caso não sejam informados
 
 Esta API foi criada como parte de um projeto de estudo e pode sofrer mudanças na estrutura dos endpoints e implementações futuras. 
