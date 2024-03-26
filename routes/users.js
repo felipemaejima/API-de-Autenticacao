@@ -37,7 +37,7 @@ router.post("/", async (req, res) => {
 	const userData = req.body;
 
 	// verifica se a sessão está atíva para inserir o novo usuário
-	if(!req.headers.session) return res.status(403).json({ message: "Faça o login adicionar usuários." , redirect: '/login'  });
+	if(!req.headers.session) return res.status(403).json({ message: "Faça o login para adicionar usuários." , redirect: '/login'  });
 
 	await User.findOne({
 		where: {
@@ -46,7 +46,7 @@ router.post("/", async (req, res) => {
 		attributes: ["sess_time"],
 	})
 		.then(async (user) => {
-			if (!user) return res.status(403).json({error: "Faça o login para inserir as informações.", redirect: '/login' });
+			if (!user) return res.status(403).json({error: "Faça o login para adicionar usuários.", redirect: '/login' });
 
 			if( !security.verifySessionValidity(user.sess_time)) { 
 				return res.json({ message: "Sessão expirada, faca o login para inserir usúario.", redirect: '/login' });
