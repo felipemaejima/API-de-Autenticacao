@@ -1,6 +1,7 @@
 import express from "express";
 import userRouter from "./routes/users.js";
 import loginRouter from "./routes/login.js";
+import logoutRouter from "./routes/logout.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -11,6 +12,7 @@ app.use(express.json());
 
 app.use("/", userRouter);
 app.use("/login", loginRouter);
+app.use("/logout", logoutRouter);
 
 app.listen(process.env.PORT, () => {
 	console.log(`Servidor rodando na porta ${process.env.PORT}`);
