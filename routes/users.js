@@ -9,6 +9,8 @@ const router = express.Router();
 
 db.connect();
 
+//////////////////////////////////////////////////////////////////////////////
+
 router.get("/users", async (req, res) => {
 	const token = req.headers.authorization
 		? req.headers.authorization.split(" ")[1]
@@ -36,6 +38,8 @@ router.get("/users", async (req, res) => {
 	});
 	return res.status(200).json(users);
 });
+
+//////////////////////////////////////////////////////////////////////////////
 
 router.post("/users", async (req, res) => {
 	const token = req.headers.authorization
@@ -85,6 +89,8 @@ router.post("/users", async (req, res) => {
 		});
 });
 
+//////////////////////////////////////////////////////////////////////////////
+
 router.get("/users/:id", async (req, res) => {
 	const token = req.headers.authorization
 		? req.headers.authorization.split(" ")[1]
@@ -131,10 +137,158 @@ router.get("/users/:id", async (req, res) => {
 	});
 });
 
-router.put("/users/:id", async (req, res) => {});
+//////////////////////////////////////////////////////////////////////////////
 
-router.patch("/users/:id", async (req, res) => {});
+router.put("/users/:id", async (req, res) => {
+	const token = req.headers.authorization
+		? req.headers.authorization.split(" ")[1]
+		: null;
 
-router.delete("/users/:id", async (req, res) => {});
+	const inBlacklist = await security.checkBlacklist(token);
+	const isValidyToken = await security.verifyToken(token);
+
+	if (!token || !isValidyToken || inBlacklist)
+		return res.status(403).json({ message: "Faça o login para acessar." });
+
+	const role = await security.getUserRole(token);
+
+	if (role < 3)
+		return res
+			.status(403)
+			.json({ message: "Voce não tem permissão para realizar essa ação." });
+
+	const userData = req.body;
+	const minPasswordLength = 3;
+
+	if (!userData.password || !userData.username || !userData.email)
+		return res
+			.status(401)
+			.json({ error: "Envie todos os dados para atualização." });
+
+	if (userData.password.length < minPasswordLength)
+		return res.status(401).json({
+			error: `A senha deve ter pelo menos ${minPasswordLength} caracteres`,
+		});
+
+	if (userData.password !== userData.confirmPassword)
+		return res.status(401).json({ error: "As senhas devem ser iguais" });
+
+	userData.password = await security.createPasswordHash(userData.password);
+
+	await User.update(userData, {
+		where: {
+			id: req.params.id,
+		},
+	})
+		.then((data) => {
+			if (!data)
+				return res
+					.status(401)
+					.json({ error: "Não foi possível atualizar o usuário." });
+			return res
+				.status(200)
+				.json({ message: "Usuário atualizado com sucesso." });
+		})
+		.catch((err) => {
+			const errors = err.errors.map((error) => error.message);
+			return res.status(401).json({ error: errors });
+		});
+});
+
+//////////////////////////////////////////////////////////////////////////////
+
+router.patch("/users/:id", async (req, res) => {
+	const token = req.headers.authorization
+		? req.headers.authorization.split(" ")[1]
+		: null;
+
+	const inBlacklist = await security.checkBlacklist(token);
+	const isValidyToken = await security.verifyToken(token);
+
+	if (!token || !isValidyToken || inBlacklist)
+		return res.status(403).json({ message: "Faça o login para acessar." });
+
+	const role = await security.getUserRole(token);
+
+	if (role < 3)
+		return res
+			.status(403)
+			.json({ message: "Voce não tem permissão para realizar essa ação." });
+
+	const userData = req.body;
+	const minPasswordLength = 3;
+
+	if (userData.password && userData.password.length < minPasswordLength)
+		return res.status(401).json({
+			error: `A senha deve ter pelo menos ${minPasswordLength} caracteres`,
+		});
+
+	if (userData.password && userData.password !== userData.confirmPassword)
+		return res.status(401).json({ error: "As senhas devem ser iguais" });
+
+		if (userData.password)
+		userData.password = await security.createPasswordHash(userData.password);
+
+	await User.update(userData, {
+		where: {
+			id: req.params.id,
+		},
+	})
+		.then((data) => {
+			if (!data)
+				return res
+					.status(401)
+					.json({ error: "Não foi possível atualizar o usuário." });
+			return res
+				.status(200)
+				.json({ message: "Usuário atualizado com sucesso." });
+		})
+		.catch((err) => {
+			const errors = err.errors.map((error) => error.message);
+			return res.status(401).json({ error: errors });
+		});
+});
+
+//////////////////////////////////////////////////////////////////////////////
+
+router.delete("/users/:id", async (req, res) => {
+	const token = req.headers.authorization
+		? req.headers.authorization.split(" ")[1]
+		: null;
+
+	const inBlacklist = await security.checkBlacklist(token);
+	const isValidyToken = await security.verifyToken(token);
+
+	if (!token || !isValidyToken || inBlacklist)
+		return res.status(403).json({ message: "Faça o login para acessar." });
+
+	const role = await security.getUserRole(token);
+
+	if (role < 3)
+		return res
+			.status(403)
+			.json({ message: "Voce não tem permissão para realizar essa ação." });
+
+	await User.update({ isActive: false }, {
+		where: {
+			id: req.params.id,
+		},
+	})
+		.then((data) => {
+			if (!data)
+				return res
+					.status(401)
+					.json({ error: "Não foi possível apagar o usuário." });
+			return res
+				.status(200)
+				.json({ message: "Usuário deletado com sucesso." });
+		})
+		.catch((err) => {
+			const errors = err.errors.map((error) => error.message);
+			return res.status(401).json({ error: errors });
+		});
+});
+
+//////////////////////////////////////////////////////////////////////////////
 
 export default router;
