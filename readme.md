@@ -7,17 +7,11 @@ Uma API RESTful com operações de CRUD (Create, Read, Update, Delete) e autenti
 - Sequelize
 - MySQL
 - Express
+- JsonWebToken
 
 ## Outras Bibliotecas
 - Bcrypt
 - Dotenv
-
-## Pendências a Serem Implementadas
-- Finalizar criação e configuração das rotas de atualização e deleção de usuários
-- Implementar sistema de permissões de usuários (3 níveis)
-- Implementar JWT (JSON Web Tokens)
-- Lógica para armazenar Log das atividades realizadas no banco de dados
-- Criar testes (jest)
 
 ## Endpoints (passíveis de mudança na estrutura)
 
@@ -34,5 +28,11 @@ Uma API RESTful com operações de CRUD (Create, Read, Update, Delete) e autenti
    - `GET`
    - Espera um array de numeros(4) [total de caracteres, quantidade de números , quantidade de símbolos, quantidade de letras maiúsculas], completanto o restante (caso haja) com letras minusculas.
    - Observação: Utilizará os parâmetros padrão no código caso não sejam informados
+
+## Pendências a Serem Implementadas
+- [ ] Finalizar criação e configuração das rotas de atualização e deleção de usuários
+- [ ] Criar lógica para que somente administradores criem usuários de níveis maiores que usuários
+- [ ] Lógica para armazenar Log das atividades realizadas no banco de dados
+- [ ] Criar testes (jest)
 
 Esta API foi criada como parte de um projeto de estudo e pode sofrer mudanças na estrutura dos endpoints e implementações futuras. 

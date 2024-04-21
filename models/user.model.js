@@ -1,58 +1,66 @@
-import { DataTypes } from "sequelize";
-import db  from "../db.js";
+import { DataTypes, Model } from 'sequelize';
+import db from '../db.js';
+import Role from './role.model.js';
 
-const sequelize = db.sequelize;
+const { sequelize } = db;
 
-const User = sequelize.define("User", {
+
+class User extends Model {}
+
+User.init({
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
   username: {
     type: DataTypes.STRING(50),
     allowNull: false,
     validate: {
       notEmpty: {
-        msg: "O nome de usuário deve ser informado.",
+        msg: "Usuário não informado.",
       },
       notNull: {
-        msg: "O nome de usuário deve ser informado.",
+        msg: "Usuário não informado.",
       },
-    },
+    }
   },
   email: {
     type: DataTypes.STRING(50),
-    unique: {
-      msg: "O email informado ja está registrado.",
-    },
     allowNull: false,
+    unique: {
+      msg: 'Email ja cadastrado.',
+    },
     validate: {
-        isEmail: true,
-        notEmpty: {
-            msg: "O Email deve ser informado.",
-          },
-          notNull: {
-            msg: "O Email deve ser informado.",
-          },
-    }
+      notEmpty: {
+        msg: "Email não informado.",
+      },
+      notNull: {
+        msg: "Email não informado.",
+      },
+      isEmail: {
+        msg: 'Informe um Email valido.',
+      },
+    },
   },
   password: {
     type: DataTypes.TEXT,
     allowNull: false,
     validate: {
       notEmpty: {
-        msg: "A senha deve ser informada.",
+        msg: "Senha não informada.",
       },
       notNull: {
-        msg: "A senha deve ser informada.",
+        msg: "Senha não informada.",
       },
-      len: [10, 255],
-    },
+    }
   },
-  sess_hash: {
-    type: DataTypes.TEXT,
-    allowNull: false,
-  },
-  sess_time: {
-    type: DataTypes.DATE,
-    allowNull: false,
-  },
+}, {
+  sequelize,
+  modelName: 'User', 
+  tableName: 'users',
 });
+
+User.belongsTo(Role)
 
 export default User;

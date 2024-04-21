@@ -12,7 +12,7 @@ async function connect() {
 		await sequelize.authenticate();
 		console.log("Conexão estabelecida com sucesso.");
 
-		await sequelize.sync();
+		await sequelize.sync();   
 		console.log("Modelos sincronizados.");
 	} catch (err) {
 		console.error("Erro ao conectar ou sincronizar modelos:", err);

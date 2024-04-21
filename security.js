@@ -1,5 +1,16 @@
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+import db from "./db.js";
+import Blacklist from "./models/blacklist.model.js";
+import { UUID } from "sequelize";
+UUID
+
+db.connect();
+
 const saltRounds = 10;
+
+dotenv.config();
 
 function createPasswordHash(password) {
 	return new Promise((resolve, reject) => {
@@ -13,9 +24,9 @@ function createPasswordHash(password) {
 	});
 }
 
-function comparePasswordHash(pwClientHash, pwDbHash) {
+function comparePasswordHash(pwClient, pwDbHash) {
 	return new Promise((resolve, reject) => {
-		bcrypt.compare(pwClientHash, pwDbHash, (err, result) => {
+		bcrypt.compare(pwClient, pwDbHash, (err, result) => {
 			if (err) {
 				reject(err);
 			} else {
@@ -25,30 +36,72 @@ function comparePasswordHash(pwClientHash, pwDbHash) {
 	});
 }
 
-function createSessionHash(userId, UserName) {
+function createToken(userId, role = 1, expiresMin) {
 	return new Promise((resolve, reject) => {
-		bcrypt.hash(`${userId}${UserName}`, saltRounds, (err, hash) => {
-			if (err) {
-				reject(err);
-			} else {
-				resolve("sess_" + hash);
+		jwt.sign(
+			{ userId, role: role, time: new Date(), expiresMin: expiresMin },
+			process.env.SECRET,
+			(err, token) => {
+				if (err) {
+					reject(err);
+				} else {
+					resolve(token);
+				}
 			}
+		);
+	});
+}
+
+async function verifyToken(token) {
+	return jwt.verify(token, process.env.SECRET, (err, decoded) => {
+		if (err || !decoded) return false;
+		const time = new Date(decoded.time);
+		const expiresMin = decoded.expiresMin;
+		const currentDate = new Date();
+		const timeSession = currentDate.getTime() - time.getTime();
+		const validity = Math.floor(timeSession / 1000 / 60);
+		return validity < expiresMin ? true : false;
+	});
+}
+
+function getUserId(token) {
+	return new Promise((resolve, reject) => {
+		jwt.verify(token, process.env.SECRET, (err, decoded) => {
+			if (err || !decoded) reject(false);
+			resolve(decoded.userId);
 		});
 	});
 }
 
-function verifySessionValidity(SessionTime) {
-	const currentDate = new Date();
-	const timeSession = currentDate.getTime() - SessionTime.getTime();
-	const validity = Math.floor(timeSession / 1000 / 60);
-	return validity < 30 ? true : false;
+function getUserRole(token) {
+	return new Promise((resolve, reject) => {
+		jwt.verify(token, process.env.SECRET, (err, decoded) => {
+			if (err || !decoded) reject(false)
+			resolve(decoded.role);
+		});
+	});
+}
+
+async function checkBlacklist(token) {
+	const data = await Blacklist.findOne({
+		where: {
+			token,
+		},
+	});
+	if (!!data) {
+		return true;
+	}
+	return false;
 }
 
 const security = {
 	createPasswordHash,
 	comparePasswordHash,
-	createSessionHash,
- 	verifySessionValidity,
+	getUserRole,
+	getUserId,
+	createToken,
+	verifyToken,
+	checkBlacklist,
 };
 
 export default security;

@@ -1,7 +1,6 @@
 import express from "express";
 import userRouter from "./routes/users.js";
-import loginRouter from "./routes/login.js";
-import logoutRouter from "./routes/logout.js";
+import authRouter from "./routes/auth.js";
 import genPassRouter from "./routes/generate-password.js";
 import dotenv from "dotenv";
 
@@ -11,9 +10,8 @@ const app = express();
 
 app.use(express.json());
 
-app.use("/users", userRouter);
-app.use("/login", loginRouter);
-app.use("/logout", logoutRouter);
+app.use("/dashboard", userRouter);
+app.use("/auth", authRouter);
 
 app.use('/generate-password', genPassRouter);
 
