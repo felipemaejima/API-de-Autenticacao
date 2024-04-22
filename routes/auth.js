@@ -7,7 +7,11 @@ import security from "../security.js";
 
 const router = express.Router();
 
+const minPasswordLength = 3;
+
 db.connect();
+
+//////////////////////////////////////////////////////////////////////////////
 
 router.post("/login", async (req, res) => {
 	const userData = req.body;
@@ -59,6 +63,8 @@ router.post("/login", async (req, res) => {
 		});
 });
 
+//////////////////////////////////////////////////////////////////////////////
+
 router.post("/logout", async (req, res) => {
 	const token = req.headers.authorization
 		? req.headers.authorization.split(" ")[1]
@@ -67,12 +73,17 @@ router.post("/logout", async (req, res) => {
 	const inBlacklist = await security.checkBlacklist(token);
 	const isValidyToken = await security.verifyToken(token);
 
-	if (!token || inBlacklist || !isValidyToken) return res.status(401).json({ error: "Não está logado." });
+	if (!token || inBlacklist || !isValidyToken)
+		return res.status(401).json({ error: "Não está logado." });
 
 	await Blacklist.create({
 		token,
 	})
-		.then(() => {
+		.then((data) => {
+			if (!data)
+				return res
+					.status(401)
+					.json({ error: "Não foi possível realizar o logout." });
 			return res.status(200).json({ message: "Logout realizado com sucesso." });
 		})
 		.catch((err) => {
@@ -83,9 +94,10 @@ router.post("/logout", async (req, res) => {
 		});
 });
 
+//////////////////////////////////////////////////////////////////////////////
+
 router.post("/register", async (req, res) => {
 	const userData = req.body;
-	const minPasswordLength = 3;
 
 	if (userData.password && userData.password.length < minPasswordLength)
 		return res.status(401).json({
@@ -105,12 +117,18 @@ router.post("/register", async (req, res) => {
 		password,
 		RoleId: 1,
 	})
-		.then((data) => {
+		.then((result) => {
+			if (!result)
+				return res
+					.status(401)
+					.json({ error: "Não foi possível realizar o registro." });
 			return res.status(201).json({ message: "Usuário criado com sucesso." });
 		})
 		.catch((err) => {
-			const errors = err.errors.map((error) => error.message);
-			return res.status(401).json({ error: errors });
+			const errors = err.errors.map((error) => {
+				return { [error.path]: error.message };
+			});
+			return res.status(401).json({ error: errors});
 		});
 });
 
