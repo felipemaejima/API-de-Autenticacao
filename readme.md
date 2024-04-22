@@ -15,23 +15,22 @@ Uma API RESTful com operações de CRUD (Create, Read, Update, Delete) e autenti
 
 ## Endpoints (passíveis de mudança na estrutura)
 
-### 1. /users
+### 1. /dashboard/users
    - `POST` e `GET`
 
-### 2. /login
-   - `POST` e `GET`
+### 2. /dashboard/users/:id
+   - `PUT`, `GET`, `PATCH` e `DELETE`
 
-### 3. /logout
+### 3. /auth/login
+   - `POST` 
+
+### 4. /auth/logout
    - `POST`
 
-### 4. /generate-password (?...params)
-   - `GET`
-   - Espera um array de numeros(4) [total de caracteres, quantidade de números , quantidade de símbolos, quantidade de letras maiúsculas], completanto o restante (caso haja) com letras minusculas.
-   - Observação: Utilizará os parâmetros padrão no código caso não sejam informados
+### 5. /auth/register
+   - `POST`
 
 ## Pendências a Serem Implementadas
-- [ ] Finalizar criação e configuração das rotas de atualização e deleção de usuários
-- [ ] Criar lógica para que somente administradores criem usuários de níveis maiores que usuários
 - [ ] Lógica para armazenar Log das atividades realizadas no banco de dados
 - [ ] Criar testes (jest)
 

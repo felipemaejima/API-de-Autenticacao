@@ -7,7 +7,7 @@ import security from "../security.js";
 
 const router = express.Router();
 
-const minPasswordLength = 3;
+const minPasswordLength = process.env.MIN_PASS_LENGTH || 3;
 
 db.connect();
 
@@ -256,13 +256,17 @@ router.patch("/users/:id", async (req, res) => {
 
 	if (userData.password && userData.password.length < minPasswordLength)
 		return res.status(401).json({
-			error: [{ password: `A senha deve ter pelo menos ${minPasswordLength} caracteres` }],
+			error: [
+				{
+					password: `A senha deve ter pelo menos ${minPasswordLength} caracteres`,
+				},
+			],
 		});
 
 	if (userData.password && userData.password !== userData.confirmPassword)
-		return res.status(401).json({ 
-	error: [{ password: "As senhas devem ser iguais" }],
-});
+		return res.status(401).json({
+			error: [{ password: "As senhas devem ser iguais" }],
+		});
 
 	if (userData.password)
 		userData.password = await security.createPasswordHash(userData.password);
@@ -322,7 +326,9 @@ router.delete("/users/:id", async (req, res) => {
 		})
 		.catch((err) => {
 			console.log(err);
-			return res.status(500).json({ error: ["Não foi possível apagar o usuário."] });
+			return res
+				.status(500)
+				.json({ error: ["Não foi possível apagar o usuário."] });
 		});
 });
 

@@ -3,8 +3,6 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import db from "./db.js";
 import Blacklist from "./models/blacklist.model.js";
-import { UUID } from "sequelize";
-UUID
 
 db.connect();
 

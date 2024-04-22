@@ -4,10 +4,14 @@ import { Op } from "sequelize";
 import User from "../models/user.model.js";
 import Blacklist from "../models/blacklist.model.js";
 import security from "../security.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const router = express.Router();
 
-const minPasswordLength = 3;
+const minPasswordLength = process.env.MIN_PASS_LENGTH || 3;
+const sessionTime = process.env.SESSION_TIME;
 
 db.connect();
 
@@ -24,13 +28,13 @@ router.post("/login", async (req, res) => {
 	const isValidyToken = await security.verifyToken(token);
 
 	if (token && isValidyToken && !inBlacklist)
-		return res.status(401).json({ message: "Já está logado." });
+		return res.status(401).json({ message: ["Já está logado."] });
 
 	if (!userData.user)
-		return res.status(401).json({ error: "Usuário não informado." });
+		return res.status(401).json({ error: ["Usuário não informado."] });
 
 	if (!userData.password)
-		return res.status(401).json({ error: "Senha não informada." });
+		return res.status(401).json({ error: ["Senha não informada."] });
 
 	await User.findOne({
 		where: {
@@ -40,7 +44,7 @@ router.post("/login", async (req, res) => {
 	})
 		.then(async (data) => {
 			if (!data)
-				return res.status(401).json({ error: "Usuário não registrado." });
+				return res.status(401).json({ error: ["Usuário não registrado."] });
 
 			await security
 				.comparePasswordHash(userData.password, data.password)
@@ -48,9 +52,9 @@ router.post("/login", async (req, res) => {
 					if (!result)
 						return res
 							.status(401)
-							.json({ error: "Usuário ou senha inválidos." });
+							.json({ error: ["Usuário ou senha inválidos."] });
 
-					const token = await security.createToken(data.id, data.RoleId, 30);
+					const token = await security.createToken(data.id, data.RoleId, sessionTime);
 
 					return res.status(200).json({ token });
 				});
@@ -59,7 +63,7 @@ router.post("/login", async (req, res) => {
 			console.log(err);
 			return res
 				.status(500)
-				.json({ error: "Não foi possível realizar o login." });
+				.json({ error: ["Não foi possível realizar o login."] });
 		});
 });
 
@@ -74,7 +78,7 @@ router.post("/logout", async (req, res) => {
 	const isValidyToken = await security.verifyToken(token);
 
 	if (!token || inBlacklist || !isValidyToken)
-		return res.status(401).json({ error: "Não está logado." });
+		return res.status(401).json({ error: ["Não está logado."] });
 
 	await Blacklist.create({
 		token,
@@ -83,14 +87,14 @@ router.post("/logout", async (req, res) => {
 			if (!data)
 				return res
 					.status(401)
-					.json({ error: "Não foi possível realizar o logout." });
+					.json({ error: ["Não foi possível realizar o logout."] });
 			return res.status(200).json({ message: "Logout realizado com sucesso." });
 		})
 		.catch((err) => {
 			console.log(err);
 			return res
 				.status(500)
-				.json({ error: "Não foi possível realizar o logout." });
+				.json({ error: ["Não foi possível realizar o logout."] });
 		});
 });
 
@@ -101,11 +105,11 @@ router.post("/register", async (req, res) => {
 
 	if (userData.password && userData.password.length < minPasswordLength)
 		return res.status(401).json({
-			error: `A senha deve ter pelo menos ${minPasswordLength} caracteres`,
+			error: [`A senha deve ter pelo menos ${minPasswordLength} caracteres`],
 		});
 
 	if (userData.password && userData.password !== userData.confirmPassword)
-		return res.status(401).json({ error: "As senhas devem ser iguais" });
+		return res.status(401).json({ error: ["As senhas devem ser iguais"] });
 
 	const password = userData.password
 		? await security.createPasswordHash(userData.password)
@@ -121,7 +125,7 @@ router.post("/register", async (req, res) => {
 			if (!result)
 				return res
 					.status(401)
-					.json({ error: "Não foi possível realizar o registro." });
+					.json({ error: ["Não foi possível realizar o registro."] });
 			return res.status(201).json({ message: "Usuário criado com sucesso." });
 		})
 		.catch((err) => {
