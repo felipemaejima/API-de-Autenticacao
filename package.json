@@ -12,6 +12,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/sequelize": "^4.28.20",
     "bcrypt": "^5.1.1",
     "dotenv": "^16.4.5",
     "express": "^4.19.1",

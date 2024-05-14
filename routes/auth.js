@@ -54,7 +54,7 @@ router.post("/login", async (req, res) => {
 							.status(401)
 							.json({ error: ["Usuário ou senha inválidos."] });
 
-					const token = await security.createToken(data.id, data.RoleId, sessionTime);
+					const token = await security.createToken({id :data.id, role: data.RoleId}, sessionTime);
 
 					return res.status(200).json({ token });
 				});
